@@ -13,6 +13,18 @@ router = APIRouter(
 ARQUIVO = Path('series.json')
 LOCK = FileLock(str(ARQUIVO) + '.lock')
 
+@router.get('/', tags=['Serie'])
+def listar_series() -> list[dict]:
+    try:
+        with ARQUIVO.open('r', encoding='utf-8') as arquivo:
+            series = json.load(arquivo)
+    except FileNotFoundError:
+        series = []
+
+    return series
+
+
+
 @router.post('/', response_model=SerieResposta, status_code=201, tags=['Serie'])
 def criar_serie(serie: SerieCriarAtualizar):
     with LOCK:
