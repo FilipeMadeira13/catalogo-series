@@ -1,0 +1,37 @@
+# Python bytecode and tool caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Virtual environments
+venv/
+.venv/
+env/
+.env/
+
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Application data, locks and temporary JSON writes
+/series.json
+/series.json.lock
+/.series.json.*.tmp
+
+# Local editor and operating system files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
