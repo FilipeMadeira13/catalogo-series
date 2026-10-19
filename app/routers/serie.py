@@ -4,7 +4,7 @@ from pathlib import Path
 from fastapi import APIRouter, HTTPException
 from filelock import FileLock
 from app.models.serie import Serie, SerieCriarAtualizar, SerieResposta
-from app.utils.json_atomico import salvar_json_atomico
+from app.utils.utils_json import carregar_json, salvar_json_atomico
 
 router = APIRouter(
     prefix='/series'
@@ -13,26 +13,15 @@ router = APIRouter(
 ARQUIVO = Path('series.json')
 LOCK = FileLock(str(ARQUIVO) + '.lock')
 
-@router.get('/', tags=['Serie'])
-def listar_series() -> list[dict]:
-    try:
-        with ARQUIVO.open('r', encoding='utf-8') as arquivo:
-            series = json.load(arquivo)
-    except FileNotFoundError:
-        series = []
-
-    return series
-
+@router.get('/', response_model=list[Serie], tags=['Serie'])
+def listar_series():
+    return carregar_json(ARQUIVO)
 
 
 @router.post('/', response_model=SerieResposta, status_code=201, tags=['Serie'])
 def criar_serie(serie: SerieCriarAtualizar):
     with LOCK:
-        try:
-            with ARQUIVO.open('r', encoding='utf-8') as arquivo:
-                series = json.load(arquivo)
-        except FileNotFoundError:
-            series = []
+        series = carregar_json(ARQUIVO)
 
         for serie_existente in series:
             if (

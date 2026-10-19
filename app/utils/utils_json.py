@@ -32,3 +32,10 @@ def salvar_json_atomico(caminho: Path, dados: list) -> None:
     finally:
         if temporario is not None:
             temporario.unlink(missing_ok=True)
+
+def carregar_json(caminho: Path) -> list[dict]:
+    try:
+        with caminho.open('r', encoding='utf-8') as arquivo:
+            return json.load(arquivo)
+    except FileNotFoundError:
+        return []
