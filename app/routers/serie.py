@@ -16,15 +16,15 @@ ARQUIVO = Path('series.json')
 LOCK = FileLock(str(ARQUIVO) + '.lock')
 
 @router.get('/', response_model=list[Serie], tags=['Serie'])
-async def listar_series(serie_repositorio: Annotated[SerieRepositorio, Depends(obter_serie_repositorio)]):
-    return await serie_repositorio.listar_series()
+def listar_series(serie_repositorio: Annotated[SerieRepositorio, Depends(obter_serie_repositorio)]):
+    return serie_repositorio.listar_series()
 
 @router.get('/{titulo}', response_model=Optional[Serie], tags=['Serie'])
-async def obter_serie(
+def obter_serie(
     serie_repositorio: Annotated[SerieRepositorio, Depends(obter_serie_repositorio)],
     titulo: str,
 ):
-    serie = await serie_repositorio.obter_serie(titulo)
+    serie = serie_repositorio.obter_serie(titulo)
     if not serie:
         raise HTTPException(
             status_code=404,
@@ -34,12 +34,12 @@ async def obter_serie(
 
 
 @router.post('/', response_model=SerieResposta, status_code=201, tags=['Serie'])
-async def criar_serie(
+def criar_serie(
     serie: SerieCriarAtualizar,
     serie_repositorio: Annotated[SerieRepositorio, Depends(obter_serie_repositorio)],
     ):
         try:
-            return await serie_repositorio.criar_serie(serie)
+            return serie_repositorio.criar_serie(serie)
         except ValueError as erro:
             if str(erro) == "Já existe uma série cadastrada com esse título":
                 raise HTTPException(
