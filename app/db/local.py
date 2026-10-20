@@ -4,6 +4,7 @@ import sqlite3
 class BancoDeDadosLocal():
     def __init__(self, nome_arquivo='series.db') -> None:
         self.nome_arquivo = nome_arquivo
+        self.inicializar_banco()
 
     @contextmanager
     def conectar(self):
@@ -24,6 +25,7 @@ class BancoDeDadosLocal():
                 CREATE TABLE IF NOT EXISTS series (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     titulo TEXT NOT NULL,
+                    titulo_normalizado TEXT NOT NULL UNIQUE,
                     genero TEXT NOT NULL,
                     ano_lancamento INTEGER NOT NULL,
                     temporadas INTEGER NOT NULL

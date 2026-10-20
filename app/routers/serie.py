@@ -1,9 +1,11 @@
-import json
 from pathlib import Path
+from typing import Annotated, Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from filelock import FileLock
+from app.dependencias import obter_serie_repositorio
 from app.models.serie import Serie, SerieCriarAtualizar, SerieResposta
+from app.repositories.serie_repositorio import SerieRepositorio
 from app.utils.utils_json import carregar_json, salvar_json_atomico
 
 router = APIRouter(
@@ -14,40 +16,34 @@ ARQUIVO = Path('series.json')
 LOCK = FileLock(str(ARQUIVO) + '.lock')
 
 @router.get('/', response_model=list[Serie], tags=['Serie'])
-def listar_series():
-    return carregar_json(ARQUIVO)
+async def listar_series(serie_repositorio: Annotated[SerieRepositorio, Depends(obter_serie_repositorio)]):
+    return await serie_repositorio.listar_series()
+
+@router.get('/{titulo}', response_model=Optional[Serie], tags=['Serie'])
+async def obter_serie(
+    serie_repositorio: Annotated[SerieRepositorio, Depends(obter_serie_repositorio)],
+    titulo: str,
+):
+    serie = await serie_repositorio.obter_serie(titulo)
+    if not serie:
+        raise HTTPException(
+            status_code=404,
+            detail='Série não encontrada.'
+        )
+    return serie
 
 
 @router.post('/', response_model=SerieResposta, status_code=201, tags=['Serie'])
-def criar_serie(serie: SerieCriarAtualizar):
-    with LOCK:
-        series = carregar_json(ARQUIVO)
-
-        for serie_existente in series:
-            if (
-                serie_existente['titulo'].strip().casefold()
-                ==  serie.titulo.strip().casefold()
-            ):
+async def criar_serie(
+    serie: SerieCriarAtualizar,
+    serie_repositorio: Annotated[SerieRepositorio, Depends(obter_serie_repositorio)],
+    ):
+        try:
+            return await serie_repositorio.criar_serie(serie)
+        except ValueError as erro:
+            if str(erro) == "Já existe uma série cadastrada com esse título":
                 raise HTTPException(
                     status_code=409,
-                    detail='Esta série já está cadastrada.'
-                )
-
-        novo_id = max(
-            (s['id'] for s in series),
-            default=0
-        ) + 1
-
-        nova_serie = Serie(
-            id=novo_id,
-            **serie.model_dump(),
-        )
-
-        series.append(nova_serie.model_dump())
-
-        salvar_json_atomico(ARQUIVO, series)
-
-        return {
-            'mensagem': 'Série cadastrada com sucesso!',
-            'serie': nova_serie,
-        }
+                    detail=str(erro)
+                ) from erro
+            raise

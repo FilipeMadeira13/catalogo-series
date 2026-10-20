@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class Serie(BaseModel):
@@ -14,6 +14,16 @@ class SerieCriarAtualizar(BaseModel):
     genero: str
     ano_lancamento: int = Field(gt=1900)
     temporadas: int = Field(gt=0)
+
+    @field_validator('titulo')
+    @classmethod
+    def validar_titulo(cls, valor: str) -> str:
+        titulo = valor.strip()
+
+        if not titulo:
+            raise ValueError('O título não pode estar vazio')
+
+        return titulo
 
 
 class SerieResposta(BaseModel):
