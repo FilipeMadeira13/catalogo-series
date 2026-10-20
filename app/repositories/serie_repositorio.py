@@ -10,7 +10,7 @@ class SerieRepositorio:
     def __init__(self, database: BancoDeDadosLocal) -> None:
         self.db = database
 
-    async def listar_series(self) -> list[Serie]:
+    def listar_series(self) -> list[Serie]:
         with self.db.conectar() as conexao:
             cursor = conexao.cursor()
             cursor.execute(
@@ -33,7 +33,7 @@ class SerieRepositorio:
 
 
 
-    async def obter_serie(self, titulo: str) -> Optional[Serie]:
+    def obter_serie(self, titulo: str) -> Optional[Serie]:
         titulo_normalizado = normalizar_titulo(titulo)
 
         with self.db.conectar() as conexao:
@@ -57,7 +57,7 @@ class SerieRepositorio:
                     temporadas=linha[4],
                 )
 
-    async def criar_serie(self, serie: SerieCriarAtualizar) -> Optional[SerieResposta]:
+    def criar_serie(self, serie: SerieCriarAtualizar) -> Optional[SerieResposta]:
         titulo = serie.titulo.strip()
         titulo_normalizado = titulo.casefold()
 
